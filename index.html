@@ -31,8 +31,8 @@
             <h1 class="hero-title">
                 Momodu Kamara-Kolleh
             </h1>
-            <p class="hero-subtitle">
-                AI & Cybersecurity Engineer | Founder & CEO of Core Brim Tech
+            <p class="hero-subtitle typing-text" id="typing-text">
+                <span class="typing-cursor"></span>
             </p>
             <p class="hero-description">
                 Building scalable trust systems for emerging markets. Ethical hacker by day, AI architect by night.
@@ -293,6 +293,25 @@
                 navLinks.classList.remove('active');
             });
         });
+
+        // Typing Animation
+        const textToType = "AI & Cybersecurity Engineer | Founder & CEO of Core Brim Tech";
+        const typingElement = document.getElementById('typing-text');
+        const cursor = typingElement.querySelector('.typing-cursor');
+        let charIndex = 0;
+        
+        function typeText() {
+            if (charIndex < textToType.length) {
+                typingElement.insertBefore(document.createTextNode(textToType.charAt(charIndex)), cursor);
+                charIndex++;
+                setTimeout(typeText, 50);
+            } else {
+                cursor.classList.add('typing-done');
+            }
+        }
+        
+        // Start typing after page loads
+        setTimeout(typeText, 1000);
 
         // Blog Integration - Fetch from Dev.to
         async function fetchBlogPosts() {
