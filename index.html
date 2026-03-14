@@ -190,7 +190,21 @@
         </div>
     </section>
 
-    <section id="contact" class="section section-alt">
+    <section id="blog" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Latest Articles</h2>
+            <div class="blog-grid" id="blog-grid">
+                <div class="blog-loading">Loading articles...</div>
+            </div>
+            <div class="blog-more">
+                <a href="https://dev.to/mkk2026" target="_blank" rel="noopener" class="btn btn-secondary">
+                    View All Articles <i data-lucide="arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section">
         <div class="container">
             <h2 class="section-title">Get in Touch</h2>
             <p class="contact-description">
@@ -216,6 +230,41 @@
             </div>
         </div>
     </section>
+
+    <div class="terminal-trigger" id="terminal-trigger" title="Press ` to open terminal">
+        <i data-lucide="terminal"></i>
+    </div>
+
+    <div class="terminal-overlay" id="terminal-overlay">
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-title">momodu@portfolio:~</div>
+                <div class="terminal-controls">
+                    <button class="terminal-minimize">−</button>
+                    <button class="terminal-maximize">□</button>
+                    <button class="terminal-close" id="terminal-close">×</button>
+                </div>
+            </div>
+            <div class="terminal-body" id="terminal-body">
+                <div class="terminal-line">
+                    <span class="terminal-prompt">momodu@portfolio:~$</span>
+                    <span class="terminal-command">welcome</span>
+                </div>
+                <div class="terminal-output">
+                    <pre>
+╔══════════════════════════════════════════╗
+║  Welcome to Momodu's Portfolio Terminal  ║
+║  Type 'help' to see available commands   ║
+╚══════════════════════════════════════════╝
+                    </pre>
+                </div>
+                <div class="terminal-line terminal-input-line">
+                    <span class="terminal-prompt">momodu@portfolio:~$</span>
+                    <input type="text" class="terminal-input" id="terminal-input" autocomplete="off" spellcheck="false" />
+                </div>
+            </div>
+        </div>
+    </div>
 
     <footer class="footer">
         <div class="container">
@@ -243,6 +292,281 @@
                 });
                 navLinks.classList.remove('active');
             });
+        });
+
+        // Blog Integration - Fetch from Dev.to
+        async function fetchBlogPosts() {
+            const blogGrid = document.getElementById('blog-grid');
+            const username = 'mkk2026'; // Update with your Dev.to username
+            
+            try {
+                const response = await fetch(`https://dev.to/api/articles?username=${username}&per_page=3`);
+                const posts = await response.json();
+                
+                if (posts.length === 0) {
+                    blogGrid.innerHTML = '<div class="blog-placeholder">No articles yet. Check back soon!</div>';
+                    return;
+                }
+                
+                blogGrid.innerHTML = posts.map(post => `
+                    <article class="blog-card">
+                        <div class="blog-image">
+                            <img src="${post.cover_image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400'}" alt="${post.title}" loading="lazy" />
+                        </div>
+                        <div class="blog-content">
+                            <div class="blog-meta">
+                                <span class="blog-date">${new Date(post.published_at).toLocaleDateString()}</span>
+                                <span class="blog-readtime">${post.reading_time_minutes} min read</span>
+                            </div>
+                            <h3 class="blog-title">${post.title}</h3>
+                            <p class="blog-excerpt">${post.description.substring(0, 120)}...</p>
+                            <div class="blog-tags">
+                                ${post.tag_list.slice(0, 3).map(tag => `<span class="blog-tag">#${tag}</span>`).join('')}
+                            </div>
+                            <a href="${post.url}" target="_blank" rel="noopener" class="blog-link">
+                                Read Article <i data-lucide="arrow-up-right"></i>
+                            </a>
+                        </div>
+                    </article>
+                `).join('');
+                
+                lucide.createIcons();
+            } catch (error) {
+                blogGrid.innerHTML = `
+                    <div class="blog-placeholder">
+                        <p>Unable to load articles.</p>
+                        <a href="https://dev.to" target="_blank" rel="noopener">Visit Dev.to</a>
+                    </div>
+                `;
+            }
+        }
+        
+        fetchBlogPosts();
+
+        // Terminal Easter Egg
+        const terminalOverlay = document.getElementById('terminal-overlay');
+        const terminalTrigger = document.getElementById('terminal-trigger');
+        const terminalClose = document.getElementById('terminal-close');
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalBody = document.getElementById('terminal-body');
+        
+        let commandHistory = [];
+        let historyIndex = -1;
+        
+        const commands = {
+            help: () => `
+Available commands:
+  whoami       - Display user information
+  ls           - List sections
+  ls projects  - Show featured projects
+  skills       - Display technical skills
+  contact      - Show contact information
+  clear        - Clear terminal
+  exit         - Close terminal
+  matrix       - Enter the matrix mode`,
+            
+            whoami: () => `
+Momodu Kamara-Kolleh
+AI & Cybersecurity Engineer
+Founder & CEO of Core Brim Tech
+Location: Freetown, Sierra Leone
+Mission: Building scalable trust systems for emerging markets`,
+            
+            ls: (arg) => {
+                if (arg === 'projects') {
+                    return `
+Featured Projects:
+  📁 ruth4.0/          - Autonomous AI Operations Assistant
+  📁 corebrimtech/     - AI-Powered Trust Infrastructure Platform
+  📁 security-tools/   - Ethical Hacking & Penetration Testing Suite`;
+                }
+                return `
+Sections available:
+  about/      Experience and background
+  projects/   Featured work and repositories
+  blog/       Latest articles and insights
+  contact/    Get in touch`;
+            },
+            
+            skills: () => `
+Technical Skills:
+  Languages:    Python, TypeScript, JavaScript, SQL
+  AI/ML:        TensorFlow, PyTorch, OpenAI, Hugging Face
+  Security:     Ethical Hacking, Penetration Testing, Red Teaming
+  Cloud:        AWS, Docker, Kubernetes, CI/CD
+  Frameworks:   Next.js, Node.js, FastAPI`,
+            
+            contact: () => `
+Contact Information:
+  📧 Email:     your.email@example.com
+  💼 LinkedIn:  linkedin.com/in/momodu-kamara-kolleh
+  🐙 GitHub:    github.com/mkk2026
+  🌐 Website:   corebrimtech.com`,
+            
+            matrix: () => {
+                document.body.style.background = 'black';
+                const canvas = document.createElement('canvas');
+                canvas.id = 'matrix-canvas';
+                canvas.style.position = 'fixed';
+                canvas.style.top = '0';
+                canvas.style.left = '0';
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                canvas.style.zIndex = '9998';
+                document.body.appendChild(canvas);
+                
+                const ctx = canvas.getContext('2d');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                
+                const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+                const charArray = chars.split('');
+                const fontSize = 14;
+                const columns = canvas.width / fontSize;
+                const drops = Array(Math.floor(columns)).fill(1);
+                
+                function draw() {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#0F0';
+                    ctx.font = fontSize + 'px monospace';
+                    
+                    for (let i = 0; i < drops.length; i++) {
+                        const text = charArray[Math.floor(Math.random() * charArray.length)];
+                        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                        
+                        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                            drops[i] = 0;
+                        }
+                        drops[i]++;
+                    }
+                }
+                
+                const interval = setInterval(draw, 35);
+                
+                setTimeout(() => {
+                    clearInterval(interval);
+                    canvas.remove();
+                    document.body.style.background = '';
+                }, 10000);
+                
+                return 'Entering the matrix... (10 seconds)';
+            },
+            
+            clear: () => {
+                const outputs = terminalBody.querySelectorAll('.terminal-line:not(.terminal-input-line), .terminal-output');
+                outputs.forEach(el => {
+                    if (!el.querySelector('pre')) el.remove();
+                });
+                return '';
+            },
+            
+            exit: () => {
+                terminalOverlay.classList.remove('active');
+                return 'Goodbye! 👋';
+            }
+        };
+        
+        function addOutput(output) {
+            if (output) {
+                const div = document.createElement('div');
+                div.className = 'terminal-output';
+                div.innerHTML = `<pre>${output}</pre>`;
+                terminalBody.insertBefore(div, terminalBody.lastElementChild);
+            }
+        }
+        
+        function handleCommand(input) {
+            const parts = input.trim().split(' ');
+            const cmd = parts[0];
+            const arg = parts[1];
+            
+            if (!cmd) return;
+            
+            commandHistory.push(input);
+            historyIndex = commandHistory.length;
+            
+            // Add command line
+            const cmdLine = document.createElement('div');
+            cmdLine.className = 'terminal-line';
+            cmdLine.innerHTML = `<span class="terminal-prompt">momodu@portfolio:~$</span> <span class="terminal-command">${escapeHtml(input)}</span>`;
+            terminalBody.insertBefore(cmdLine, terminalBody.lastElementChild);
+            
+            if (commands[cmd]) {
+                const output = commands[cmd](arg);
+                addOutput(output);
+            } else if (cmd === 'sudo') {
+                addOutput('Nice try! 😏 You don\'t need sudo here.');
+            } else {
+                addOutput(`Command not found: ${cmd}. Type 'help' for available commands.`);
+            }
+            
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Terminal controls
+        terminalTrigger.addEventListener('click', () => {
+            terminalOverlay.classList.add('active');
+            terminalInput.focus();
+        });
+        
+        terminalClose.addEventListener('click', () => {
+            terminalOverlay.classList.remove('active');
+        });
+        
+        terminalOverlay.addEventListener('click', (e) => {
+            if (e.target === terminalOverlay) {
+                terminalOverlay.classList.remove('active');
+            }
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '`' || e.key === '~') {
+                e.preventDefault();
+                terminalOverlay.classList.toggle('active');
+                if (terminalOverlay.classList.contains('active')) {
+                    terminalInput.focus();
+                }
+            }
+            if (e.key === 'Escape' && terminalOverlay.classList.contains('active')) {
+                terminalOverlay.classList.remove('active');
+            }
+        });
+        
+        terminalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleCommand(terminalInput.value);
+                terminalInput.value = '';
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    terminalInput.value = commandHistory[historyIndex] || '';
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    terminalInput.value = commandHistory[historyIndex] || '';
+                } else {
+                    historyIndex = commandHistory.length;
+                    terminalInput.value = '';
+                }
+            }
+        });
+        
+        // Focus input when terminal opens
+        terminalOverlay.addEventListener('transitionend', () => {
+            if (terminalOverlay.classList.contains('active')) {
+                terminalInput.focus();
+            }
         });
     </script>
 </body>
